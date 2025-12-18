@@ -19,12 +19,12 @@ router.get("/", async function (req, res, next) {
 	result.sort((a, b) => {
 		return a.order - b.order;
 	});
-	res.send(formatResponse(200, "success", formatResponse(result)));
+	res.send(formatResponse(200, "success", result));
 });
 // 添加博客分类
 router.post("/", async function (req, res, next) {
 	const result = await addBlogTypeService(req.body);
-	res.send(formatResponse(200, "success", formatResponse(result)));
+	res.send(formatResponse(200, "success", result));
 });
 
 // 获取其中一个博客分类

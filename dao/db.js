@@ -8,7 +8,8 @@ const blogTypeModel = require("./model/blogTypeModel");
 const demoModel = require("./model/demoModel");
 const messageModel = require("./model/messageModel");
 const settingModel = require("./model/settingModel");
-
+const userCModel = require("./model/userCModel");
+const userInfoModel = require("./model/userInfoModel");
 const md5 = require("md5");
 (async function () {
 	/**
@@ -34,6 +35,30 @@ const md5 = require("md5");
 		foreignKey: "blogId",
 		targetKey: "id",
 		as: "blog"
+	});
+	/**
+	 * 定义用户表和文章表关联
+	 */
+	userCModel.hasMany(blogModel, {
+		foreignKey: "userId",
+		targetKey: "id"
+	});
+	blogModel.belongsTo(userCModel, {
+		foreignKey: "userId",
+		targetKey: "id",
+		as: "user"
+	});
+	/**
+	 * 定义用户和用户信息表关联 一对一
+	 */
+	userCModel.hasOne(userInfoModel, {
+		foreignKey: "userId",
+		targetKey: "id"
+	});
+	userInfoModel.belongsTo(userCModel, {
+		foreignKey: "userId",
+		targetKey: "id",
+		as: "user"
 	});
 	/**
    * 一次同步所有模型

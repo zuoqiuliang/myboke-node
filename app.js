@@ -6,11 +6,7 @@ var logger = require("morgan");
 const { expressjwt: exressJwt } = require("express-jwt");
 const md5 = require("md5");
 const session = require("express-session");
-const {
-	ForbiddenError,
-	ServiceError,
-	UnknownError
-} = require("./utils/errors");
+const { ForbiddenError, ServiceError, UnknownError } = require("./utils/errors");
 var app = express();
 require("dotenv").config(); //默认读取项目根目录下.env 环境变量文件
 
@@ -26,7 +22,7 @@ const blogRouter = require("./routes/blog");
 const demoRouter = require("./routes/demo");
 const messageRouter = require("./routes/message");
 const settingRouter = require("./routes/setting");
-
+const userRouter = require("./routes/user");
 app.use(
 	session({
 		secret: process.env.SESSION_SECRET,
@@ -38,7 +34,7 @@ app.use(
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser(process.env.JWT_SECRET));
 app.use(express.static(path.join(__dirname, "public")));
 // 配置验证 token中间件
 app.use(
@@ -54,10 +50,17 @@ app.use(
 			{ url: "/api/blog", methods: ["GET"] },
 			{ url: /\api\/blog\/\d/, methods: ["GET"] }, //排除规则支持正则
 			{ url: "/api/project", methods: ["GET"] },
-			{ url: "/api/message", methods: ["GET", "POST"] }
+			{ url: "/api/message", methods: ["GET", "POST"] },
+			{ url: "/api/user/register", methods: ["POST"] },
+			{ url: "/api/user/login", methods: ["POST"] }
 		]
 	})
 );
+// cookie自定义校验
+app.use((req, res, next) => {
+	console.log(req.signedCookies, "========signedCookies");
+	next();
+});
 app.use("/api/admin", adminRouter);
 app.use("/res/captcha", captchaRouter);
 app.use("/api/banner", bannerRouter);
@@ -68,7 +71,7 @@ app.use("/api/project", demoRouter);
 app.use("/api/message", messageRouter);
 app.use("/api/comment", messageRouter);
 app.use("/api/setting", settingRouter);
-
+app.use("/api/user", userRouter);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
 	next(createError(404));
@@ -77,13 +80,13 @@ app.use(function (req, res, next) {
 // error handler
 app.use(function (err, req, res, next) {
 	// 任何中间件 throw 抛出的 error 都会直接到此中间件
-	console.log(err.name);
+	console.log(err.name, "app.js 83");
 	if (err.name === "UnauthorizedError") {
 		res.send(new ForbiddenError("未登录 或登录已过期").toResponseJSON());
 	} else if (err instanceof ServiceError) {
 		res.send(err.toResponseJSON());
 	} else {
-		res.send(new UnknownError());
+		res.send(new UnknownError().toResponseJSON());
 	}
 });
 

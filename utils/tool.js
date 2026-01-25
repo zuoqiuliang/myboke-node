@@ -16,6 +16,9 @@ exports.analysisToken = (token) => {
 	return jwt.verify(token.split(" ")[1], md5(process.env.JWT_SECRET));
 };
 
+exports.analysisCookieToken = (token) => {
+	return jwt.verify(token, md5(process.env.JWT_SECRET));
+};
 // 格式化从表中取出的数组数据格式，取出 dataValues 等多余信息
 exports.formatFormDaoData = (data) => {
 	let arr = [];
@@ -53,11 +56,8 @@ const storage = multer.diskStorage({
 	},
 	// filename 用于确定文件夹中的文件名的确定。 如果没有设置 filename，每个文件将设置为一个随机文件名，并且是没有扩展名的,为什么要把上传的文件名随机处理呢？因为每个用户可能上传相同的文件名，会覆盖，所以做随机名字。
 	filename: function (req, file, cb) {
-		const basename = path.basename(
-			file.originalname,
-			path.extname(file.originalname)
-		);
-		const extname = path.extname(file.originalname);
+		const basename = path.basename(file.originalname, path.extname(file.originalname));
+		const extname = path.extname(file.originalname) || ".png";
 		const newName =
 			basename +
 			"_" +
@@ -75,5 +75,75 @@ exports.uploading = multer({
 
 // 将 markdown 中的内容转成数组目录的格式
 exports.formatToc = (markdownInfo) => {
-	markdownToc(markdownInfo).json(); //可以将 markdown 中的内容提取出标题成一个数组
+	// 一维数组
+	const flatTocArr = markdownToc(markdownInfo).json; //可以将 markdown 中的内容提取出标题成一个下面的数组
+	console.log(flatTocArr, "flatTocArr");
+	// [
+	//   {
+	//     content: 'vue 颠覆式的开发方式',
+	//     slug: 'vue-颠覆式的开发方式',
+	//     lvl: 1,
+	//     i: 0,
+	//     seen: 0
+	//   },
+	//   { content: '解疑', slug: '解疑', lvl: 2, i: 1, seen: 0 },
+	//   { content: 'vue的核心功能', slug: 'vue的核心功能', lvl: 2, i: 2, seen: 0 }
+	// ]
+	// 我们需要转成下面的格式
+	// [
+	//   {
+	//     content: 'vue 颠覆式的开发方式',
+	//     slug: 'vue-颠覆式的开发方式',
+	//     lvl: 1,
+	//     i: 0,
+	//     seen: 0,
+	//     children: [
+	//       { content: '解疑', slug: '解疑', lvl: 2, i: 1, seen: 0 },
+	//       { content: 'vue的核心功能', slug: 'vue的核心功能', lvl: 2, i: 2, seen: 0 }
+	//     ]
+	//   }
+	// ]
+	// 转换函数
+	function transfer(flatTocArr) {
+		let result = [];
+		let stack = [];
+		let min = 6; //默认最大的标题数是 6 级，最小 1 级
+		function createTocItem(item) {
+			return {
+				content: item.content,
+				slug: item.slug,
+				level: item.lvl,
+				i: item.i,
+				seen: item.seen,
+				children: []
+			};
+		}
+		function getLastItem(item) {
+			const top = stack[stack.length - 1];
+			if (!top) {
+				stack.push(item);
+			} else if (item.level > top.level) {
+				top.children.push(item);
+				stack.push(item);
+			} else {
+				stack.pop();
+				getLastItem(item);
+			}
+		}
+		for (let item of flatTocArr) {
+			if (item.lvl <= min) {
+				min = item.lvl;
+			}
+		}
+		for (let item of flatTocArr) {
+			const tocItem = createTocItem(item);
+			if (item.lvl === min) {
+				result.push(tocItem);
+			}
+
+			getLastItem(tocItem);
+		}
+		return result;
+	}
+	return transfer(flatTocArr);
 };

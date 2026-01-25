@@ -118,3 +118,12 @@ exports.loginUserService = async (user) => {
 		userName: userInfoData.userName
 	};
 };
+
+// 查询用户信息
+exports.getUserInfoService = async (userId) => {
+	const userInfo = await getUserInfoDao(userId);
+	if (!userInfo) {
+		throw new ValidationError("用户信息不存在");
+	}
+	return userInfo;
+};

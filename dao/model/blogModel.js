@@ -1,9 +1,17 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../dbConnect");
+const { v4: uuidv4 } = require("uuid");
 // 定义数据模型
 module.exports = sequelize.define(
 	"blog",
 	{
+		// 主键
+		id: {
+			type: DataTypes.STRING(36),
+			unique: true,
+			primaryKey: true,
+			defaultValue: () => uuidv4()
+		},
 		// 表对应的字段有哪些
 		// 文章标题
 		title: {
@@ -23,6 +31,10 @@ module.exports = sequelize.define(
 			type: DataTypes.TEXT,
 			allowNull: false
 		},
+		markdownContent: {
+			type: DataTypes.TEXT,
+			allowNull: false
+		},
 		thumb: {
 			type: DataTypes.STRING,
 			allowNull: false
@@ -38,7 +50,11 @@ module.exports = sequelize.define(
 			allowNull: false
 		},
 		categoryId: {
-			type: DataTypes.INTEGER,
+			type: DataTypes.STRING(36),
+			allowNull: false
+		},
+		userId: {
+			type: DataTypes.STRING(36),
 			allowNull: false
 		}
 	},

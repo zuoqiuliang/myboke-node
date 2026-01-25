@@ -34,3 +34,11 @@ exports.loginUserDao = async (user) => {
 		}
 	});
 };
+// 通过 userC 表的id 检测用户是否存在
+exports.checkUserExistDao = async (id) => {
+	return await userModel.findOne({
+		where: {
+			id
+		}
+	});
+};

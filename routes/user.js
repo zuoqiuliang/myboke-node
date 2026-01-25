@@ -25,11 +25,11 @@ router.post("/login", async function (req, res, next) {
 	if (result.token) {
 		// res.setHeader("authentication", result.token);
 		res.cookie("token", result.token, {
-			httpOnly: true,
 			maxAge: 60 * 60 * 24 * 1000 * parseInt(result.remember),
 			signed: true
 		});
 	}
+	delete result.token;
 	res.send(formatResponse(200, "success", result));
 });
 

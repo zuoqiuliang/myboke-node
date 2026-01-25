@@ -12,6 +12,7 @@ const { getAllBlogByCategoryIdDao } = require("../dao/blogDao");
 
 // 新增博客分类
 exports.addBlogTypeService = async (newBlogTypeInfo) => {
+	console.log("新增博客分类请求数据:", newBlogTypeInfo);
 	// 新增的时候需要验证，比如：用户通过 postman 发送的请求而不是通过真实web 端项目发送的，使用validate.js来做验证
 	/**
 	 * 数据验证规则
@@ -27,20 +28,31 @@ exports.addBlogTypeService = async (newBlogTypeInfo) => {
 			presence: {
 				allowEmpty: false
 			},
-			type: "string"
+			type: "integer"
 		}
 	};
 	/**
 	 *进行数据验证,validate.validate方法验证成功会返回 undefined
 	 */
 	const validateResult = validate.validate(newBlogTypeInfo, blogTypeRule);
-	console.log(validateResult, "l");
+	console.log("验证结果:", validateResult);
 	if (!validateResult) {
-		newBlogTypeInfo.arcticleCount = 0;
-		const { dataValues } = await addBlogTypeDao(newBlogTypeInfo);
-		console.log(dataValues);
-		return dataValues;
+		// 确保所有必填字段都有值
+		newBlogTypeInfo.arcticleCount = newBlogTypeInfo.arcticleCount || 0;
+		console.log("准备插入数据:", newBlogTypeInfo);
+		try {
+			const result = await addBlogTypeDao(newBlogTypeInfo);
+			console.log("插入结果:", result);
+			return result.dataValues;
+		} catch (error) {
+			console.error("数据库插入错误:", error);
+			console.error("错误类型:", error.name);
+			console.error("错误消息:", error.message);
+			console.error("错误详情:", error);
+			throw error;
+		}
 	} else {
+		console.error("验证失败:", validateResult);
 		throw new ValidationError("数据验证失败");
 	}
 };

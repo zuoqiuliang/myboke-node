@@ -1,5 +1,7 @@
 const blogModel = require("./model/blogModel");
 const blogTypeModel = require("./model/blogTypeModel");
+const userCModel = require("./model/userCModel");
+const userInfoModel = require("./model/userInfoModel");
 exports.addBlogDao = async (newBlogInfo) => {
 	console.log(newBlogInfo, "newBlogInfo");
 	return await blogModel.create(newBlogInfo);
@@ -18,6 +20,10 @@ exports.getBlogByPageDao = async (searchInfo) => {
 					where: {
 						id: searchInfo.categoryId
 					}
+				},
+				{
+					model: userInfoModel,
+					as: "userInfo"
 				}
 			],
 
@@ -32,6 +38,10 @@ exports.getBlogByPageDao = async (searchInfo) => {
 				{
 					model: blogTypeModel,
 					as: "category" //返回数据的时候给起别名
+				},
+				{
+					model: userInfoModel,
+					as: "userInfo"
 				}
 			],
 			offset: (searchInfo.page * 1 - 1) * searchInfo.limit, //跳过多少条
@@ -48,6 +58,10 @@ exports.getOneBlogDao = async (id) => {
 			{
 				model: blogTypeModel,
 				as: "category" //返回数据的时候给关联的表起别名
+			},
+			{
+				model: userInfoModel,
+				as: "userInfo"
 			}
 		]
 	});

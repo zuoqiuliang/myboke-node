@@ -60,6 +60,15 @@ const md5 = require("md5");
 		targetKey: "id",
 		as: "user"
 	});
+
+	/**
+	 * 定义文章和用户信息表直接关联
+	 */
+	blogModel.belongsTo(userInfoModel, {
+		foreignKey: "userId",
+		targetKey: "userId",
+		as: "userInfo"
+	});
 	/**
    * 一次同步所有模型
     你可以使用 sequelize.sync() 自动同步所有模型. 示例：

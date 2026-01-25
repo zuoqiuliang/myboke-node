@@ -9,11 +9,8 @@ const {
 	updateOneBlogDao,
 	deleteOneBlogDao
 } = require("../dao/blogDao");
-const {
-	addBlogTypeArcticleCount,
-	getOneBlogTypeDao
-} = require("../dao/blogTypeDao");
-const { formatFormDaoData } = require("../utils/tool");
+const { addBlogTypeArcticleCount, getOneBlogTypeDao } = require("../dao/blogTypeDao");
+const { formatFormDaoData, formatToc } = require("../utils/tool");
 const { deleteMessageByBlogIdDao } = require("../dao/messageDao");
 // 根据自定义属性categoryIdIsExist扩展校验规则
 validate.validators.categoryIdIsExist = async function (value) {
@@ -62,6 +59,12 @@ exports.addBlogService = async (newBlogInfo) => {
 			},
 			type: "string"
 		},
+		markdownContent: {
+			presence: {
+				allowEmpty: false
+			},
+			type: "string"
+		},
 		thumb: {
 			presence: {
 				allowEmpty: true
@@ -84,8 +87,12 @@ exports.addBlogService = async (newBlogInfo) => {
 		},
 		categoryId: {
 			presence: true,
-			type: "integer",
+			type: "string",
 			categoryIdIsExist: true //自定义扩展的一个属性
+		},
+		userId: {
+			presence: true,
+			type: "string"
 		}
 	};
 	/**
@@ -94,27 +101,41 @@ exports.addBlogService = async (newBlogInfo) => {
 	try {
 		const validateResult = await validate.async(newBlogInfo, blogRule);
 		console.log(validateResult, "l");
+		const toc = formatToc(newBlogInfo.markdownContent);
+		console.log(toc, "toc");
+		newBlogInfo.toc = JSON.stringify(toc);
 		const result = await addBlogDao(newBlogInfo);
-		console.log(result, "result");
+		if (result && result.dataValues && result.dataValues.toc) {
+			result.dataValues.toc = JSON.parse(result.dataValues.toc);
+		}
 		if (result) {
 			// 新增文章成功后把博客分类下的文章数加 1
 			await addBlogTypeArcticleCount(newBlogInfo.categoryId);
-			return result;
+			return result.dataValues;
 		}
 	} catch (error) {
-		console.log(error);
-		throw new ValidationError("数据验证失败");
+		console.log("新增博客错误:", error);
+		// 区分验证错误和其他错误
+		if (error instanceof ValidationError) {
+			throw error;
+		} else {
+			// 其他错误，返回更具体的信息
+			throw new Error(`新增博客失败: ${error.message || error}`);
+		}
 	}
 };
 
 // 获取博客文章（带分页）
-exports.getBlogByPageService = async (searchInfo) => {
+exports.getBlogByPageService = async (searchInfo, req) => {
+	console.log(searchInfo, "searchInfo");
 	const result = await getBlogByPageDao(searchInfo);
 	console.log(result);
 	const rows = formatFormDaoData(result.rows);
 	rows.forEach((item) => {
 		item.toc = JSON.parse(item.toc);
 	});
+	console.log(rows, "rows");
+
 	return {
 		total: result.count,
 		rows

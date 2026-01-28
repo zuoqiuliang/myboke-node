@@ -26,7 +26,7 @@ router.post("/", async function (req, res, next) {
 // 获取其中一个博客文章
 router.get("/:id", async function (req, res, next) {
 	// 由于在 C 端每次刷新都算浏览记录+1，在 B 端不算，且 C 端不登录也可以查看文章，所以通过 B 端在请求头传递authorization而 C 端不传递来判断是否浏览记录+1
-	const result = await getOneBlogService(req.params.id, req.headers.authorization);
+	const result = await getOneBlogService(req.params.id);
 	res.send(formatResponse(200, "success", result));
 });
 // 修改一个博客文章

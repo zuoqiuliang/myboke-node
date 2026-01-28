@@ -28,11 +28,11 @@ module.exports = sequelize.define(
 			allowNull: false
 		},
 		htmlContent: {
-			type: DataTypes.TEXT,
+			type: DataTypes.TEXT("long"),
 			allowNull: false
 		},
 		markdownContent: {
-			type: DataTypes.TEXT,
+			type: DataTypes.TEXT("long"),
 			allowNull: false
 		},
 		thumb: {

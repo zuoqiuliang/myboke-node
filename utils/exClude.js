@@ -8,5 +8,7 @@ exports.exClude = [
 	{ url: "/api/project", methods: ["GET"] },
 	{ url: "/api/message", methods: ["GET", "POST"] },
 	{ url: "/api/user/register", methods: ["POST"] },
-	{ url: "/api/user/login", methods: ["POST"] }
+	{ url: "/api/user/login", methods: ["POST"] },
+	{ url: "/api/proxy/image", methods: ["GET"] } // 图片代理路由
 ];
+

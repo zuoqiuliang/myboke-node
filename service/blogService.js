@@ -11,6 +11,7 @@ const {
 } = require("../dao/blogDao");
 const { addBlogTypeArcticleCount, getOneBlogTypeDao } = require("../dao/blogTypeDao");
 const { formatFormDaoData, formatToc } = require("../utils/tool");
+const { processHtmlImages } = require("../utils/imageUtil");
 const { deleteMessageByBlogIdDao } = require("../dao/messageDao");
 // 根据自定义属性categoryIdIsExist扩展校验规则
 validate.validators.categoryIdIsExist = async function (value) {
@@ -133,6 +134,10 @@ exports.getBlogByPageService = async (searchInfo, req) => {
 	const rows = formatFormDaoData(result.rows);
 	rows.forEach((item) => {
 		item.toc = JSON.parse(item.toc);
+		// 处理 HTML 内容中的图片链接
+		// if (item.htmlContent) {
+		// 	item.htmlContent = processHtmlImages(item.htmlContent);
+		// }
 	});
 	console.log(rows, "rows");
 
@@ -144,9 +149,13 @@ exports.getBlogByPageService = async (searchInfo, req) => {
 
 // 获取一个博客文章
 exports.getOneBlogService = async (id, auth) => {
-	const data = await getOneBlogDao(id, auth);
+	const data = await getOneBlogDao(id);
 	// 处理查出的这一条数据的 toc 还原成数组
 	data.dataValues.toc = JSON.parse(data.dataValues.toc);
+	// 处理 HTML 内容中的图片链接
+	if (data.dataValues.htmlContent) {
+		data.dataValues.htmlContent = processHtmlImages(data.dataValues.htmlContent);
+	}
 	if (!auth) {
 		// C端不登录也可以访问文章，需要把浏览数+1
 		console.log(auth, "auth");

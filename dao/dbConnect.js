@@ -1,3 +1,4 @@
+require("dotenv").config();
 const { Sequelize } = require("sequelize");
 
 const sequelize = new Sequelize(
@@ -7,7 +8,12 @@ const sequelize = new Sequelize(
 	{
 		host: process.env.DB_HOST,
 		dialect: "mysql",
-		logging: false //生成的 sql 语句不在控制台展示了
+		logging: false, //生成的 sql 语句不在控制台展示了
+		dialectOptions: {
+			dateStrings: true,
+			typeCast: true
+		},
+		timezone: "+08:00"
 	}
 );
 

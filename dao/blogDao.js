@@ -7,6 +7,8 @@ exports.addBlogDao = async (newBlogInfo) => {
 	return await blogModel.create(newBlogInfo);
 };
 
+const tagModel = require("./model/tagModel");
+
 // 查询文章带分页
 exports.getBlogByPageDao = async (searchInfo) => {
 	// 根据分类进行分页查询
@@ -24,6 +26,10 @@ exports.getBlogByPageDao = async (searchInfo) => {
 				{
 					model: userInfoModel,
 					as: "userInfo"
+				},
+				{
+					model: tagModel,
+					as: "tags" // 返回文章的标签
 				}
 			],
 
@@ -42,6 +48,10 @@ exports.getBlogByPageDao = async (searchInfo) => {
 				{
 					model: userInfoModel,
 					as: "userInfo"
+				},
+				{
+					model: tagModel,
+					as: "tags" // 返回文章的标签
 				}
 			],
 			offset: (searchInfo.page * 1 - 1) * searchInfo.limit, //跳过多少条
@@ -62,6 +72,10 @@ exports.getOneBlogDao = async (id) => {
 			{
 				model: userInfoModel,
 				as: "userInfo"
+			},
+			{
+				model: tagModel,
+				as: "tags" // 返回文章的标签
 			}
 		]
 	});

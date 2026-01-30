@@ -56,11 +56,16 @@ module.exports = sequelize.define(
 		userId: {
 			type: DataTypes.STRING(36),
 			allowNull: false
+		},
+		createdAt: {
+			type: DataTypes.DATE,
+			allowNull: false,
+			defaultValue: DataTypes.NOW
 		}
 	},
 	{
 		freezeTableName: true,
-		createdAt: true,
+		createdAt: false,
 		updatedAt: false
 	}
 );

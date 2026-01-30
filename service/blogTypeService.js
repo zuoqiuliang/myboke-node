@@ -29,6 +29,12 @@ exports.addBlogTypeService = async (newBlogTypeInfo) => {
 				allowEmpty: false
 			},
 			type: "integer"
+		},
+		path: {
+			presence: {
+				allowEmpty: false
+			},
+			type: "string"
 		}
 	};
 	/**
@@ -58,8 +64,8 @@ exports.addBlogTypeService = async (newBlogTypeInfo) => {
 };
 
 // 获取博客分类
-exports.getAllBlogTypeService = async () => {
-	return await getAllBlogTyoeDao();
+exports.getAllBlogTypeService = async (searchInfo) => {
+	return await getAllBlogTyoeDao(searchInfo);
 };
 
 // 获取一个博客分类

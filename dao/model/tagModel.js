@@ -1,9 +1,10 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../dbConnect");
 const { v4: uuidv4 } = require("uuid");
-// 定义数据模型
+
+// 定义标签模型
 module.exports = sequelize.define(
-	"blogType",
+	"tag",
 	{
 		// 主键
 		id: {
@@ -12,29 +13,21 @@ module.exports = sequelize.define(
 			primaryKey: true,
 			defaultValue: () => uuidv4()
 		},
-		// 表对应的字段有哪些
-		// 分类名
+		// 标签名称
 		name: {
 			type: DataTypes.STRING,
 			allowNull: false
 		},
-		// 文章数
-		arcticleCount: {
-			type: DataTypes.INTEGER,
-			allowNull: false
+		// 父标签 ID（用于实现层级结构）
+		parentId: {
+			type: DataTypes.STRING(36),
+			allowNull: true // 顶级标签的 parentId 为 null
 		},
-		path: {
-			type: DataTypes.STRING,
-			allowNull: false
-		},
+		// 标签排序
 		order: {
 			type: DataTypes.INTEGER,
-			allowNull: false
-		},
-		createdAt: {
-			type: DataTypes.DATE,
 			allowNull: false,
-			defaultValue: DataTypes.NOW
+			defaultValue: 0
 		}
 	},
 	{

@@ -16,3 +16,12 @@ exports.updateAdmin = async (newAccountInfo) => {
 		}
 	});
 };
+
+// 校验管理员是否存在
+exports.checkAdminExistDao = async (adminId) => {
+	return await adminModel.findOne({
+		where: {
+			id: adminId
+		}
+	});
+};

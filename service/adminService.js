@@ -4,6 +4,8 @@ const { loginDao, updateAdmin } = require("../dao/adminDao");
 const jwt = require("jsonwebtoken");
 const { ValidationError } = require("../utils/errors");
 const { formatResponse, analysisToken } = require("../utils/tool");
+const { ForbiddenError } = require("../utils/errors");
+const { checkAdminExistDao } = require("../dao/adminDao");
 
 exports.loginService = async (loginObj) => {
 	console.log(loginObj, "登录信息");
@@ -18,7 +20,7 @@ exports.loginService = async (loginObj) => {
 		let loginPeriod = null;
 		if (loginObj.remember) {
 			//如果用户勾选了记住密码则 cookie 的 token 时长为 7 天
-			loginPeriod = parseInt(loginObj.remember);
+			loginPeriod = 7;
 		} else {
 			loginPeriod = 1;
 		}
@@ -39,7 +41,8 @@ exports.loginService = async (loginObj) => {
 		console.log("token===>", token);
 		return {
 			data: result,
-			token
+			token,
+			remember: loginPeriod
 		};
 	}
 	return {
@@ -53,10 +56,7 @@ exports.updateAdminAccountInfo = async (accountInfo) => {
 	if (accountInfo.oldLoginPwd === accountInfo.loginPwd) {
 		throw new ValidationError("新密码不能与旧密码重复");
 	}
-	const adminInfo = await loginDao(
-		accountInfo.loginId,
-		md5(accountInfo.oldLoginPwd)
-	);
+	const adminInfo = await loginDao(accountInfo.loginId, md5(accountInfo.oldLoginPwd));
 	console.log(adminInfo, "admininfo===");
 	if (adminInfo && adminInfo.dataValues) {
 		const loginPwd = md5(accountInfo.loginPwd);
@@ -74,4 +74,14 @@ exports.updateAdminAccountInfo = async (accountInfo) => {
 	} else {
 		throw new ValidationError("旧密码不正确");
 	}
+};
+
+// 校验管理员是否存在
+exports.checkAdminExistService = async (adminId) => {
+	const adminExist = await checkAdminExistDao(adminId);
+	console.log(adminExist, "adminExist===");
+	if (!adminExist) {
+		throw new ForbiddenError("无权限，请联系管理员");
+	}
+	return adminExist;
 };

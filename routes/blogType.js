@@ -11,8 +11,9 @@ const {
 
 // 获取博客分类
 router.get("/", async function (req, res, next) {
-	const result = await getAllBlogTypeService();
-	result.sort((a, b) => {
+	const result = await getAllBlogTypeService(req.query);
+	console.log(result.rows, "result");
+	result.rows.sort((a, b) => {
 		return a.order - b.order;
 	});
 	res.send(formatResponse(200, "success", result));

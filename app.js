@@ -15,7 +15,7 @@ const { exClude } = require("./utils/exClude");
 const { analysisCookieToken } = require("./utils/tool");
 const jwt = require("jsonwebtoken");
 const { checkUserExistDao } = require("./dao/userDao");
-
+const { checkAdminExistService } = require("./service/adminService");
 var app = express();
 var adminRouter = require("./routes/admin");
 const captchaRouter = require("./routes/captcha");
@@ -78,10 +78,20 @@ app.use(async (req, res, next) => {
 		const userInfo = analysisCookieToken(token);
 		console.log(userInfo, "=======userInfo");
 		// 通过 token 解析出userC 表的id去校验用户是否真实存在，以防被攻击篡改了token中的id
-		const userExist = await checkUserExistDao(userInfo.id);
-		if (!userExist) {
-			throw new ForbiddenError("用户不存在");
+		if (userInfo.loginId === "admin") {
+			// B 端用户校验
+			const adminExist = await checkAdminExistService(userInfo.id);
+			if (!adminExist) {
+				throw new ForbiddenError("无权限，请联系管理员");
+			}
+		} else {
+			// C端用户校验
+			const userExist = await checkUserExistDao(userInfo.id);
+			if (!userExist) {
+				throw new ForbiddenError("用户不存在");
+			}
 		}
+
 		// 校验通过，将用户信息挂载到 req 上，后续路由可以直接使用
 		req.userInfo = userInfo;
 		next();
@@ -99,6 +109,9 @@ app.use("/api/comment", messageRouter);
 app.use("/api/setting", settingRouter);
 app.use("/api/user", userRouter);
 app.use("/api/userInfo", userInfoRouter);
+// 标签路由
+const tagRouter = require("./routes/tag");
+app.use("/api/tag", tagRouter);
 app.use("/api/proxy", proxyRouter);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -9,6 +9,9 @@ exports.exClude = [
 	{ url: "/api/message", methods: ["GET", "POST"] },
 	{ url: "/api/user/register", methods: ["POST"] },
 	{ url: "/api/user/login", methods: ["POST"] },
+	{ url: "/api/tag", methods: ["GET"] }, // 获取标签列表
+	{ url: "/api/tag/tree", methods: ["GET"] }, // 获取标签树
 	{ url: "/api/proxy/image", methods: ["GET"] } // 图片代理路由
 ];
+
 

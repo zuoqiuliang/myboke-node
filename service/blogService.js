@@ -10,6 +10,7 @@ const {
 	deleteOneBlogDao
 } = require("../dao/blogDao");
 const { addBlogTypeArcticleCount, getOneBlogTypeDao } = require("../dao/blogTypeDao");
+const { addBlogTagDao } = require("../dao/blogTagDao");
 const { formatFormDaoData, formatToc } = require("../utils/tool");
 const { processHtmlImages } = require("../utils/imageUtil");
 const { deleteMessageByBlogIdDao } = require("../dao/messageDao");
@@ -112,6 +113,13 @@ exports.addBlogService = async (newBlogInfo) => {
 		if (result) {
 			// 新增文章成功后把博客分类下的文章数加 1
 			await addBlogTypeArcticleCount(newBlogInfo.categoryId);
+
+			// 处理文章标签关联
+			if (newBlogInfo.tags && newBlogInfo.tags.length > 0) {
+				await addBlogTagDao(result.id, newBlogInfo.tags);
+			}
+
+			
 			return result.dataValues;
 		}
 	} catch (error) {
@@ -171,15 +179,24 @@ exports.getOneBlogService = async (id, auth) => {
 //修改一个博客分类
 exports.updateOneBlogService = async (id, newBlogInfo) => {
 	console.log(newBlogInfo);
-	if (newBlogInfo.htmlContent) {
-		// 如果有htmlContent字段说明改变了文章正文，需要修改 TOC 目录
-		console.log("o");
-	} else {
-		const result = await updateOneBlogDao(id, newBlogInfo);
-		console.log(result);
-		if (result[0] === 1 || result[0] === 0) {
-			return await getOneBlogDao(id);
-		}
+
+	// 处理 TOC 目录
+	if (newBlogInfo.htmlContent && newBlogInfo.markdownContent) {
+		const toc = formatToc(newBlogInfo.markdownContent);
+		newBlogInfo.toc = JSON.stringify(toc);
+	}
+
+	// 更新文章基本信息
+	const result = await updateOneBlogDao(id, newBlogInfo);
+	console.log(result);
+
+	// 处理标签关联
+	if (newBlogInfo.tags) {
+		await addBlogTagDao(id, newBlogInfo.tags);
+	}
+
+	if (result[0] === 1 || result[0] === 0) {
+		return await getOneBlogDao(id);
 	}
 };
 

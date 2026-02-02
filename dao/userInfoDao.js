@@ -22,3 +22,12 @@ exports.getUserInfoDao = async (id) => {
 		}
 	});
 };
+
+// 更新用户信息
+exports.updateUserInfoDao = async (userId, userInfoData) => {
+	return await userInfoModel.update(userInfoData, {
+		where: {
+			userId
+		}
+	});
+};

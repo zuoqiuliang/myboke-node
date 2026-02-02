@@ -70,7 +70,7 @@ const storage = multer.diskStorage({
 
 exports.uploading = multer({
 	storage: storage,
-	limits: { fileSize: 2000000, files: 1 }
+	limits: { fileSize: 6000000, files: 1 }
 });
 
 // 将 markdown 中的内容转成数组目录的格式

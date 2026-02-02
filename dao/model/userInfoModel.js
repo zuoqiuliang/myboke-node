@@ -35,6 +35,21 @@ module.exports = sequelize.define(
 			type: DataTypes.STRING,
 			allowNull: true
 		},
+		// 邮箱
+		email: {
+			type: DataTypes.STRING,
+			allowNull: true
+		},
+		// 电话
+		phone: {
+			type: DataTypes.STRING,
+			allowNull: true
+		},
+		// 所在地
+		location: {
+			type: DataTypes.STRING,
+			allowNull: true
+		},
 		// 外键
 		userId: {
 			type: DataTypes.STRING(36),

@@ -5,7 +5,8 @@ const { ValidationError } = require("../utils/errors");
 const {
 	registerUserService,
 	loginUserService,
-	getUserInfoService
+	getUserInfoService,
+	updateUserInfoService
 } = require("../service/userService");
 
 // 查询用户信息
@@ -18,8 +19,8 @@ router.get("/", async function (req, res, next) {
 // 更新用户信息接口
 router.post("/update", async function (req, res, next) {
 	console.log(req.userInfo, "=======userInfo 是你吗");
-	// const result = await registerUserService(req.body);
-	// res.send(formatResponse(200, "注册成功", result));
+	const result = await updateUserInfoService(req.userInfo.id, req.body);
+	res.send(formatResponse(200, "更新成功", result));
 });
 
 module.exports = router;

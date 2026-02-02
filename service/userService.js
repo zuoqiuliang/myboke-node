@@ -3,7 +3,11 @@ const validate = require("validate.js");
 const { ValidationError } = require("../utils/errors");
 const jwt = require("jsonwebtoken");
 const md5 = require("md5");
-const { addUserInfoDao, getUserInfoDao } = require("../dao/userInfoDao");
+const {
+	addUserInfoDao,
+	getUserInfoDao,
+	updateUserInfoDao
+} = require("../dao/userInfoDao");
 const { v4: uuidv4 } = require("uuid");
 exports.registerUserService = async (user) => {
 	try {
@@ -126,4 +130,19 @@ exports.getUserInfoService = async (userId) => {
 		throw new ValidationError("用户信息不存在");
 	}
 	return userInfo;
+};
+
+// 更新用户信息
+exports.updateUserInfoService = async (userId, userInfoData) => {
+	// 验证用户信息是否存在
+	const existingUserInfo = await getUserInfoDao(userId);
+	if (!existingUserInfo) {
+		throw new ValidationError("用户信息不存在");
+	}
+
+	// 更新用户信息
+	await updateUserInfoDao(userId, userInfoData);
+
+	// 返回更新后的用户信息
+	return await getUserInfoDao(userId);
 };

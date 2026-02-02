@@ -107,20 +107,22 @@ exports.addBlogService = async (newBlogInfo) => {
 		console.log(toc, "toc");
 		newBlogInfo.toc = JSON.stringify(toc);
 		const result = await addBlogDao(newBlogInfo);
+		console.log(result.dataValues, "result!!!!!");
 		if (result && result.dataValues && result.dataValues.toc) {
 			result.dataValues.toc = JSON.parse(result.dataValues.toc);
 		}
 		if (result) {
 			// 新增文章成功后把博客分类下的文章数加 1
-			await addBlogTypeArcticleCount(newBlogInfo.categoryId);
+			const updateResult = await addBlogTypeArcticleCount(newBlogInfo.categoryId);
+			console.log(updateResult, "updateResult!!!!!");
 
-			// 处理文章标签关联
-			if (newBlogInfo.tags && newBlogInfo.tags.length > 0) {
-				await addBlogTagDao(result.id, newBlogInfo.tags);
-			}
+			// // 处理文章标签关联
+			// if (newBlogInfo.tags && newBlogInfo.tags.length > 0) {
+			// 	const tagResult = await addBlogTagDao(result.id, newBlogInfo.tags);
+			// 	console.log(tagResult, "tagResult!!!!!");
+			// }
 
-			
-			return result.dataValues;
+			return result;
 		}
 	} catch (error) {
 		console.log("新增博客错误:", error);

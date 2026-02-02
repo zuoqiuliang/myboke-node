@@ -30,6 +30,8 @@ const userRouter = require("./routes/user");
 const userInfoRouter = require("./routes/userInfo");
 // 图片代理路由
 const proxyRouter = require("./routes/proxy");
+// 标签路由
+const tagRouter = require("./routes/tag");
 app.use(
 	session({
 		secret: process.env.SESSION_SECRET,
@@ -109,8 +111,6 @@ app.use("/api/comment", messageRouter);
 app.use("/api/setting", settingRouter);
 app.use("/api/user", userRouter);
 app.use("/api/userInfo", userInfoRouter);
-// 标签路由
-const tagRouter = require("./routes/tag");
 app.use("/api/tag", tagRouter);
 app.use("/api/proxy", proxyRouter);
 // catch 404 and forward to error handler

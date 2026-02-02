@@ -12,6 +12,7 @@ const {
 
 // 获取文章带分页的
 router.get("/", async function (req, res, next) {
+	console.log(req.query, "=======获取文章带分页的");
 	const result = await getBlogByPageService(req.query);
 	res.send(formatResponse(200, "success", result));
 });

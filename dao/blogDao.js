@@ -1,20 +1,82 @@
+const { Op } = require("sequelize");
 const blogModel = require("./model/blogModel");
 const blogTypeModel = require("./model/blogTypeModel");
 const userCModel = require("./model/userCModel");
 const userInfoModel = require("./model/userInfoModel");
+const tagModel = require("./model/tagModel");
 exports.addBlogDao = async (newBlogInfo) => {
 	console.log(newBlogInfo, "newBlogInfo");
-	return await blogModel.create(newBlogInfo);
+	// 提取标签ID，避免将tags字段传递给create方法
+	const { tags, ...blogData } = newBlogInfo;
+	// 创建博客
+	const blogIns = await blogModel.create(blogData);
+	// 处理标签关联（使用实例方法）
+	let blogTags = [];
+	if (tags && Array.isArray(tags)) {
+		blogTags = await blogIns.setTags(tags);
+	}
+	return { ...blogIns, tags: blogTags };
 };
-
-const tagModel = require("./model/tagModel");
 
 // 查询文章带分页
 exports.getBlogByPageDao = async (searchInfo) => {
+	console.log(searchInfo, "searchInfo======>");
+	// 添加参数验证
+	if (!searchInfo || typeof searchInfo !== "object") {
+		searchInfo = {};
+	}
+
+	// 设置默认值
+	const page = parseInt(searchInfo.page) || 1;
+	const limit = parseInt(searchInfo.limit) || 10;
+
+	// 构建查询条件
+	let where = {};
+
+	// 标题搜索
+	if (searchInfo.title && searchInfo.title.trim()) {
+		where.title = {
+			[Op.like]: `%${searchInfo.title}%`
+		};
+	}
+
+	// 描述模糊搜索
+	if (searchInfo.description && searchInfo.description.trim()) {
+		where.description = {
+			[Op.like]: `%${searchInfo.description}%`
+		};
+	}
+
+	// 标签搜索
+	if (searchInfo.tagId && searchInfo.tagId !== "-1") {
+		// 标签搜索需要通过关联查询实现
+	}
+
+	// 作者搜索
+	if (searchInfo.userId && searchInfo.userId !== "-1") {
+		where.userId = searchInfo.userId;
+	}
+
+	// 时间范围搜索
+	if (searchInfo.startTime && searchInfo.endTime) {
+		where.createdAt = {
+			[Op.between]: [new Date(searchInfo.startTime), new Date(searchInfo.endTime)]
+		};
+	} else if (searchInfo.startTime) {
+		where.createdAt = {
+			[Op.gte]: new Date(searchInfo.startTime)
+		};
+	} else if (searchInfo.endTime) {
+		where.createdAt = {
+			[Op.lte]: new Date(searchInfo.endTime)
+		};
+	}
+
 	// 根据分类进行分页查询
 	if (searchInfo.categoryId && searchInfo.categoryId !== "-1") {
 		// 根据分页，查询文章表里指定分类下的文章
 		const data = await blogModel.findAndCountAll({
+			where: where,
 			include: [
 				{
 					model: blogTypeModel,
@@ -32,14 +94,15 @@ exports.getBlogByPageDao = async (searchInfo) => {
 					as: "tags" // 返回文章的标签
 				}
 			],
-
-			offset: (searchInfo.page * 1 - 1) * searchInfo.limit, //跳过多少条
-			limit: searchInfo.limit * 1
+			offset: (page - 1) * limit,
+			limit: limit,
+			order: [["createdAt", "DESC"]]
 		});
 		return data;
 	} else {
 		// 根据分页，查询文章表里所有文章
 		const data = await blogModel.findAndCountAll({
+			where: where,
 			include: [
 				{
 					model: blogTypeModel,
@@ -54,8 +117,9 @@ exports.getBlogByPageDao = async (searchInfo) => {
 					as: "tags" // 返回文章的标签
 				}
 			],
-			offset: (searchInfo.page * 1 - 1) * searchInfo.limit, //跳过多少条
-			limit: searchInfo.limit * 1
+			offset: (page - 1) * limit,
+			limit: limit,
+			order: [["createdAt", "DESC"]]
 		});
 		return data;
 	}
@@ -85,11 +149,20 @@ exports.getOneBlogDao = async (id) => {
 
 //修改一个博客文章
 exports.updateOneBlogDao = async (id, newBlogInfo) => {
-	return await blogModel.update(newBlogInfo, {
+	// 提取标签ID，避免将tags字段传递给update方法
+	const { tags, ...blogData } = newBlogInfo;
+	// 更新博客信息
+	const result = await blogModel.update(blogData, {
 		where: {
 			id
 		}
 	});
+	// 处理标签关联（使用实例方法）
+	if (tags !== undefined) {
+		const blogIns = await blogModel.findByPk(id);
+		await blogIns.setTags(tags);
+	}
+	return result;
 };
 
 // 删除一个博客文章

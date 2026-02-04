@@ -12,6 +12,7 @@ const userCModel = require("./model/userCModel");
 const userInfoModel = require("./model/userInfoModel");
 const tagModel = require("./model/tagModel");
 const blogTagModel = require("./model/blogTagModel");
+const userFavoriteModel = require("./model/userFavoriteModel");
 const md5 = require("md5");
 (async function () {
 	/**
@@ -100,6 +101,22 @@ const md5 = require("md5");
 		foreignKey: "tagId", // 标签在中间表中的外键
 		otherKey: "blogId", // 文章在中间表中的外键
 		as: "blogs" // 别名，用于查询时使用
+	});
+
+	/**
+	 * 定义用户和文章的多对多关系（收藏）
+	 */
+	userCModel.belongsToMany(blogModel, {
+		through: userFavoriteModel, // 通过中间表关联
+		foreignKey: "userId", // 用户在中间表中的外键
+		otherKey: "blogId", // 文章在中间表中的外键
+		as: "favoriteBlogs" // 别名，用于查询时使用
+	});
+	blogModel.belongsToMany(userCModel, {
+		through: userFavoriteModel, // 通过中间表关联
+		foreignKey: "blogId", // 文章在中间表中的外键
+		otherKey: "userId", // 用户在中间表中的外键
+		as: "favoritedUsers" // 别名，用于查询时使用
 	});
 	/**
    * 一次同步所有模型

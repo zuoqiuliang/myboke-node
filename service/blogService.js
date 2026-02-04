@@ -7,13 +7,15 @@ const {
 	getBlogByPageDao,
 	getOneBlogDao,
 	updateOneBlogDao,
-	deleteOneBlogDao
+	deleteOneBlogDao,
+	getBlogsByUserIdDao
 } = require("../dao/blogDao");
 const { addBlogTypeArcticleCount, getOneBlogTypeDao } = require("../dao/blogTypeDao");
 const { addBlogTagDao } = require("../dao/blogTagDao");
 const { formatFormDaoData, formatToc } = require("../utils/tool");
 const { processHtmlImages } = require("../utils/imageUtil");
 const { deleteMessageByBlogIdDao } = require("../dao/messageDao");
+const { checkUserFavoriteDao } = require("../dao/userFavoriteDao");
 // 根据自定义属性categoryIdIsExist扩展校验规则
 validate.validators.categoryIdIsExist = async function (value) {
 	console.log(value, "value");
@@ -158,7 +160,7 @@ exports.getBlogByPageService = async (searchInfo, req) => {
 };
 
 // 获取一个博客文章
-exports.getOneBlogService = async (id, auth) => {
+exports.getOneBlogService = async (id, userInfo, auth) => {
 	const data = await getOneBlogDao(id);
 	// 处理查出的这一条数据的 toc 还原成数组
 	data.dataValues.toc = JSON.parse(data.dataValues.toc);
@@ -166,6 +168,9 @@ exports.getOneBlogService = async (id, auth) => {
 	if (data.dataValues.htmlContent) {
 		data.dataValues.htmlContent = processHtmlImages(data.dataValues.htmlContent);
 	}
+	// 判断当前用户是否收藏过这篇文章
+	const isCollected = await checkUserFavoriteDao(userInfo.id, id);
+	data.dataValues.isCollected = isCollected;
 	if (!auth) {
 		// C端不登录也可以访问文章，需要把浏览数+1
 		console.log(auth, "auth");
@@ -213,4 +218,20 @@ exports.deleteOneBlogService = async (id) => {
 	// 该文章下的评论也要删除，后边再加
 	await deleteMessageByBlogIdDao(id);
 	return await deleteOneBlogDao(id);
+};
+
+// 获取用户的文章（个人中心）
+exports.getUserBlogsService = async (userId, page = 1, limit = 10) => {
+	console.log(userId, "userId");
+	const result = await getBlogsByUserIdDao(userId, page, limit);
+	console.log(result, "result");
+	const rows = formatFormDaoData(result.rows);
+	rows.forEach((item) => {
+		item.toc = JSON.parse(item.toc);
+	});
+
+	return {
+		total: result.count,
+		rows
+	};
 };

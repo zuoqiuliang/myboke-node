@@ -184,3 +184,30 @@ exports.getAllBlogByCategoryIdDao = async (categoryId) => {
 		}
 	});
 };
+
+//根据userId获取用户的文章
+exports.getBlogsByUserIdDao = async (userId, page = 1, limit = 10) => {
+	const offset = (page - 1) * limit;
+	return await blogModel.findAndCountAll({
+		where: {
+			userId
+		},
+		include: [
+			{
+				model: blogTypeModel,
+				as: "category"
+			},
+			{
+				model: userInfoModel,
+				as: "userInfo"
+			},
+			{
+				model: tagModel,
+				as: "tags"
+			}
+		],
+		offset: offset,
+		limit: limit,
+		order: [["createdAt", "DESC"]]
+	});
+};

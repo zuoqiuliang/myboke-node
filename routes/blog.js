@@ -8,7 +8,8 @@ const {
 	getOneBlogService,
 	updateOneBlogService,
 	deleteOneBlogService,
-	getUserBlogsService
+	getUserBlogsService,
+	getRecommendedBlogsService
 } = require("../service/blogService");
 
 // 获取当前用户的文章（个人中心）
@@ -17,6 +18,13 @@ router.get("/user", async function (req, res, next) {
 	const limit = req.query.limit ? parseInt(req.query.limit) || 10 : 10;
 	console.log(req.query.limit, "req.query.limit");
 	const result = await getUserBlogsService(req.userInfo.id, page, limit);
+	res.send(formatResponse(200, "success", result));
+});
+
+// 获取推荐文章（浏览数+评论数最多的前10篇）
+router.get("/recommended", async function (req, res, next) {
+	const limit = parseInt(req.query.limit) || 10;
+	const result = await getRecommendedBlogsService(limit);
 	res.send(formatResponse(200, "success", result));
 });
 // 获取文章带分页的

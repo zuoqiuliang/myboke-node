@@ -8,7 +8,8 @@ const {
 	getOneBlogDao,
 	updateOneBlogDao,
 	deleteOneBlogDao,
-	getBlogsByUserIdDao
+	getBlogsByUserIdDao,
+	getRecommendedBlogsDao
 } = require("../dao/blogDao");
 const { addBlogTypeArcticleCount, getOneBlogTypeDao } = require("../dao/blogTypeDao");
 const { addBlogTagDao } = require("../dao/blogTagDao");
@@ -16,6 +17,7 @@ const { formatFormDaoData, formatToc } = require("../utils/tool");
 const { processHtmlImages } = require("../utils/imageUtil");
 const { deleteMessageByBlogIdDao } = require("../dao/messageDao");
 const { checkUserFavoriteDao } = require("../dao/userFavoriteDao");
+const { getMessagesByBlogIdService } = require("./messageService");
 const { checkUserLikeDao } = require("../dao/userLikeDao");
 // 根据自定义属性categoryIdIsExist扩展校验规则
 validate.validators.categoryIdIsExist = async function (value) {
@@ -175,6 +177,10 @@ exports.getOneBlogService = async (id, userInfo, auth) => {
 	// 判断当前用户是否点赞过这篇文章
 	const isLiked = await checkUserLikeDao(userInfo.id, id);
 	data.dataValues.isLiked = isLiked;
+	// 获取文章评论列表
+	const comments = await getMessagesByBlogIdService(id, 1, 50); // 一次获取50条评论
+	data.dataValues.comments = comments.rows;
+	data.dataValues.commentCount = comments.total;
 	if (!auth) {
 		// C端不登录也可以访问文章，需要把浏览数+1
 		console.log(auth, "auth");
@@ -238,4 +244,15 @@ exports.getUserBlogsService = async (userId, page = 1, limit = 10) => {
 		total: result.count,
 		rows
 	};
+};
+
+// 获取推荐文章（浏览数+评论数最多的前10篇）
+exports.getRecommendedBlogsService = async (limit = 10) => {
+	const result = await getRecommendedBlogsDao(limit);
+	const rows = formatFormDaoData(result);
+	rows.forEach((item) => {
+		item.toc = JSON.parse(item.toc);
+	});
+
+	return rows;
 };

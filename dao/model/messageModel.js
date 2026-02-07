@@ -1,9 +1,8 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../dbConnect");
 const { v4: uuidv4 } = require("uuid");
-// 定义数据模型
-// 导出创建的 admin 模型（表），当往表里增加数据的时候会用到该导出的模型
-module.exports = sequelize.define(
+// 定义评论模型
+const messageModel = sequelize.define(
 	"message",
 	{
 		// 主键
@@ -13,22 +12,20 @@ module.exports = sequelize.define(
 			primaryKey: true,
 			defaultValue: () => uuidv4()
 		},
-		// 表对应的字段有哪些
-		nickname: {
-			type: DataTypes.STRING,
+		// 用户ID（关联userC表）
+		userId: {
+			type: DataTypes.STRING(36),
 			allowNull: false
 		},
+		// 文章ID（关联blog表）
+		blogId: {
+			type: DataTypes.STRING(36),
+			allowNull: false
+		},
+		// 评论内容
 		content: {
 			type: DataTypes.STRING,
 			allowNull: false
-		},
-		avatar: {
-			type: DataTypes.STRING,
-			allowNull: false
-		},
-		blogId: {
-			type: DataTypes.STRING(36),
-			allowNull: true
 		}
 	},
 	{
@@ -37,3 +34,5 @@ module.exports = sequelize.define(
 		updatedAt: false
 	}
 );
+
+module.exports = messageModel;

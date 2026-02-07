@@ -1,71 +1,164 @@
-const { Op } = require("sequelize");
 const messageModel = require("./model/messageModel");
+const userCModel = require("./model/userCModel");
 const blogModel = require("./model/blogModel");
+const userInfoModel = require("./model/userInfoModel");
+const blogTypeModel = require("./model/blogTypeModel");
 
-exports.addMessageDao = async (messageInfo) => {
-	return await messageModel.create(messageInfo);
+// 添加评论
+exports.addMessageDao = async (userId, blogId, content) => {
+	// 验证外键存在性
+	const blogExists = await blogModel.findByPk(blogId);
+	if (!blogExists) {
+		return { success: false, message: "文章不存在" };
+	}
+
+	const userExists = await userCModel.findByPk(userId);
+	if (!userExists) {
+		return { success: false, message: "用户不存在" };
+	}
+
+	// 创建评论
+	const result = await messageModel.create({
+		userId,
+		blogId,
+		content
+	});
+
+	// 更新文章的评论数
+	blogExists.commentNumber++;
+	await blogExists.save();
+
+	return { success: true, data: result };
 };
 
-// 分页获取评论数
-exports.getAllMessageDao = async (searchInfo) => {
-	console.log(searchInfo, "searchInfo");
-	if (searchInfo.blogId) {
-		// 有 blogId 说明是评论，在 B 端有一个评论管理模块，获取所有评论，而在 C 端需要在某一篇文章下获取评论，所以分为两种情况
-		// 通过一个类型值来做判断是否全部获取，all 为全部获取，确定的 blogId 则只获取其中一篇的
-		if (searchInfo.blogId == "all") {
-			const data = await messageModel.findAndCountAll({
-				where: {
-					blogId: {
-						[Op.ne]: null
-					}
-				},
+// 删除评论
+exports.deleteMessageDao = async (messageId, userId) => {
+	// 检查评论是否存在且属于当前用户
+	const message = await messageModel.findOne({
+		where: {
+			id: messageId,
+			userId
+		}
+	});
+
+	if (!message) {
+		return { success: false, message: "评论不存在或无权限删除" };
+	}
+
+	// 保存文章ID用于后续更新评论数
+	const blogId = message.blogId;
+
+	// 删除评论
+	const deletedCount = await messageModel.destroy({
+		where: {
+			id: messageId,
+			userId
+		}
+	});
+
+	// 更新文章的评论数
+	const blog = await blogModel.findByPk(blogId);
+	if (blog && blog.commentNumber > 0) {
+		blog.commentNumber--;
+		await blog.save();
+	}
+
+	return { success: true, deleted: deletedCount };
+};
+
+// 根据文章ID获取评论列表
+exports.getMessagesByBlogIdDao = async (blogId, page = 1, limit = 20) => {
+	const offset = (page - 1) * limit;
+
+	return await messageModel.findAndCountAll({
+		where: {
+			blogId
+		},
+		include: [
+			{
+				model: userCModel,
+				as: "user",
 				include: [
 					{
-						model: blogModel,
-						as: "blog"
+						model: userInfoModel,
+						as: "userInfo"
 					}
-				],
-				offset: (searchInfo.page * 1 - 1) * searchInfo.limit, //跳过多少条
-				limit: searchInfo.limit * 1,
-				order: [["createdAt", "DESC"]]
-			});
-			return data;
-		} else {
-			return await messageModel.findAndCountAll({
-				where: {
-					blogId: searchInfo.blogId
-				},
-				offset: (searchInfo.page * 1 - 1) * searchInfo.limit, //跳过多少条
-				limit: searchInfo.limit * 1,
-				order: [["createdAt", "DESC"]]
-			});
-		}
-	} else {
-		return await messageModel.findAndCountAll({
-			where: {
-				blogId: null
-			},
-			offset: (searchInfo.page * 1 - 1) * searchInfo.limit, //跳过多少条
-			limit: searchInfo.limit * 1,
-			order: [["createdAt", "DESC"]]
-		});
-	}
-};
-
-// 删除评论(通过留言/评论表的主键 id 删除)
-exports.deleteMessageDao = async (id) => {
-	return await messageModel.destroy({
-		where: {
-			id
-		}
+				]
+			}
+		],
+		offset,
+		limit,
+		order: [["createdAt", "DESC"]] // 按时间降序，最新的在最上边
 	});
 };
 
-// 删除评论（通过文章的 id 来删除文章下所有评论）
+// 获取文章的评论数
+exports.getMessageCountByBlogIdDao = async (blogId) => {
+	const count = await messageModel.count({
+		where: {
+			blogId
+		}
+	});
+
+	return count;
+};
+
+// 根据评论ID获取评论详情
+exports.getMessageByIdDao = async (messageId) => {
+	return await messageModel.findByPk(messageId, {
+		include: [
+			{
+				model: userCModel,
+				as: "user",
+				include: [
+					{
+						model: userInfoModel,
+						as: "userInfo"
+					}
+				]
+			}
+		]
+	});
+};
+
+// 删除文章的所有评论（用于删除文章时）
 exports.deleteMessageByBlogIdDao = async (blogId) => {
 	return await messageModel.destroy({
 		where: {
 			blogId
 		}
+	});
+};
+
+// 获取所有用户评论（带分页）
+exports.getAllMessagesDao = async (page = 1, limit = 20) => {
+	const offset = (page - 1) * limit;
+
+	return await messageModel.findAndCountAll({
+		include: [
+			{
+				model: userCModel,
+				as: "user",
+				include: [
+					{
+						model: userInfoModel,
+						as: "userInfo"
+					}
+				]
+			},
+			{
+				model: blogModel,
+				as: "blog",
+				include: [
+					{
+						model: blogTypeModel,
+						as: "category"
+					}
+				]
+			}
+		],
+		offset,
+		limit,
+		order: [["createdAt", "DESC"]] // 按时间降序，最新的在最上边
 	});
 };

@@ -263,3 +263,43 @@ exports.getBlogsByUserIdDao = async (userId, page = 1, limit = 10) => {
 	}
 	return data;
 };
+
+// 获取推荐文章（浏览数+评论数最多的前10篇）
+exports.getRecommendedBlogsDao = async (limit = 10) => {
+	// 查询文章，按 (浏览数 + 评论数) 降序排序
+	const data = await blogModel.findAll({
+		include: [
+			{
+				model: blogTypeModel,
+				as: "category"
+			},
+			{
+				model: userInfoModel,
+				as: "userInfo"
+			},
+			{
+				model: tagModel,
+				as: "tags"
+			}
+		],
+		limit: limit,
+		// 使用 Sequelize.literal 计算浏览数+评论数并排序
+		order: [[Sequelize.literal("(scanNumber + commentNumber)"), "DESC"]]
+	});
+
+	// 为每个文章计算点赞数和收藏数
+	for (const blog of data) {
+		// 计算点赞数
+		const likeCount = await userLikeModel.count({
+			where: { blogId: blog.id }
+		});
+		blog.dataValues.likeCount = likeCount;
+		// 计算收藏数
+		const favoriteCount = await userFavoriteModel.count({
+			where: { blogId: blog.id }
+		});
+		blog.dataValues.favoriteCount = favoriteCount;
+	}
+
+	return data;
+};

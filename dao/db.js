@@ -40,6 +40,19 @@ const md5 = require("md5");
 		targetKey: "id",
 		as: "blog"
 	});
+	
+	/**
+	 * 定义用户表和评论表关联
+	 */
+	userCModel.hasMany(messageModel, {
+		foreignKey: "userId",
+		targetKey: "id"
+	});
+	messageModel.belongsTo(userCModel, {
+		foreignKey: "userId",
+		targetKey: "id",
+		as: "user"
+	});
 	/**
 	 * 定义用户表和文章表关联
 	 */

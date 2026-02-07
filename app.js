@@ -33,6 +33,7 @@ const proxyRouter = require("./routes/proxy");
 // 标签路由
 const tagRouter = require("./routes/tag");
 const userFavoriteRouter = require("./routes/userFavorite");
+const userLikeRouter = require("./routes/userLike");
 app.use(
 	session({
 		secret: process.env.SESSION_SECRET,
@@ -115,6 +116,7 @@ app.use("/api/userInfo", userInfoRouter);
 app.use("/api/tag", tagRouter);
 app.use("/api/proxy", proxyRouter);
 app.use("/api/userFavorite", userFavoriteRouter);
+app.use("/api/userLike", userLikeRouter);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
 	next(createError(404));

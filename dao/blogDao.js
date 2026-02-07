@@ -1,9 +1,11 @@
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const blogModel = require("./model/blogModel");
 const blogTypeModel = require("./model/blogTypeModel");
 const userCModel = require("./model/userCModel");
 const userInfoModel = require("./model/userInfoModel");
 const tagModel = require("./model/tagModel");
+const userLikeModel = require("./model/userLikeModel");
+const userFavoriteModel = require("./model/userFavoriteModel");
 exports.addBlogDao = async (newBlogInfo) => {
 	console.log(newBlogInfo, "newBlogInfo");
 	// 提取标签ID，避免将tags字段传递给create方法
@@ -98,6 +100,19 @@ exports.getBlogByPageDao = async (searchInfo) => {
 			limit: limit,
 			order: [["createdAt", "DESC"]]
 		});
+		// 为每个文章计算点赞数和收藏数
+		for (const blog of data.rows) {
+			// 计算点赞数
+			const likeCount = await userLikeModel.count({
+				where: { blogId: blog.id }
+			});
+			blog.dataValues.likeCount = likeCount;
+			// 计算收藏数
+			const favoriteCount = await userFavoriteModel.count({
+				where: { blogId: blog.id }
+			});
+			blog.dataValues.favoriteCount = favoriteCount;
+		}
 		return data;
 	} else {
 		// 根据分页，查询文章表里所有文章
@@ -121,6 +136,19 @@ exports.getBlogByPageDao = async (searchInfo) => {
 			limit: limit,
 			order: [["createdAt", "DESC"]]
 		});
+		// 为每个文章计算点赞数和收藏数
+		for (const blog of data.rows) {
+			// 计算点赞数
+			const likeCount = await userLikeModel.count({
+				where: { blogId: blog.id }
+			});
+			blog.dataValues.likeCount = likeCount;
+			// 计算收藏数
+			const favoriteCount = await userFavoriteModel.count({
+				where: { blogId: blog.id }
+			});
+			blog.dataValues.favoriteCount = favoriteCount;
+		}
 		return data;
 	}
 };
@@ -143,6 +171,16 @@ exports.getOneBlogDao = async (id) => {
 			}
 		]
 	});
+	// 计算点赞数
+	const likeCount = await userLikeModel.count({
+		where: { blogId: id }
+	});
+	data.dataValues.likeCount = likeCount;
+	// 计算收藏数
+	const favoriteCount = await userFavoriteModel.count({
+		where: { blogId: id }
+	});
+	data.dataValues.favoriteCount = favoriteCount;
 	console.log(data);
 	return data;
 };
@@ -188,7 +226,7 @@ exports.getAllBlogByCategoryIdDao = async (categoryId) => {
 //根据userId获取用户的文章
 exports.getBlogsByUserIdDao = async (userId, page = 1, limit = 10) => {
 	const offset = (page - 1) * limit;
-	return await blogModel.findAndCountAll({
+	const data = await blogModel.findAndCountAll({
 		where: {
 			userId
 		},
@@ -210,4 +248,18 @@ exports.getBlogsByUserIdDao = async (userId, page = 1, limit = 10) => {
 		limit: limit,
 		order: [["createdAt", "DESC"]]
 	});
+	// 为每个文章计算点赞数和收藏数
+	for (const blog of data.rows) {
+		// 计算点赞数
+		const likeCount = await userLikeModel.count({
+			where: { blogId: blog.id }
+		});
+		blog.dataValues.likeCount = likeCount;
+		// 计算收藏数
+		const favoriteCount = await userFavoriteModel.count({
+			where: { blogId: blog.id }
+		});
+		blog.dataValues.favoriteCount = favoriteCount;
+	}
+	return data;
 };

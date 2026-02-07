@@ -16,6 +16,7 @@ const { formatFormDaoData, formatToc } = require("../utils/tool");
 const { processHtmlImages } = require("../utils/imageUtil");
 const { deleteMessageByBlogIdDao } = require("../dao/messageDao");
 const { checkUserFavoriteDao } = require("../dao/userFavoriteDao");
+const { checkUserLikeDao } = require("../dao/userLikeDao");
 // 根据自定义属性categoryIdIsExist扩展校验规则
 validate.validators.categoryIdIsExist = async function (value) {
 	console.log(value, "value");
@@ -171,6 +172,9 @@ exports.getOneBlogService = async (id, userInfo, auth) => {
 	// 判断当前用户是否收藏过这篇文章
 	const isCollected = await checkUserFavoriteDao(userInfo.id, id);
 	data.dataValues.isCollected = isCollected;
+	// 判断当前用户是否点赞过这篇文章
+	const isLiked = await checkUserLikeDao(userInfo.id, id);
+	data.dataValues.isLiked = isLiked;
 	if (!auth) {
 		// C端不登录也可以访问文章，需要把浏览数+1
 		console.log(auth, "auth");

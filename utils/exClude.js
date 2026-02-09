@@ -13,5 +13,3 @@ exports.exClude = [
 	{ url: "/api/tag/tree", methods: ["GET"] }, // 获取标签树
 	{ url: "/api/proxy/image", methods: ["GET"] } // 图片代理路由
 ];
-
-

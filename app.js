@@ -69,6 +69,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // );
 // cookie自定义校验
 app.use(async (req, res, next) => {
+	console.log(req.path, "=======req.path", req.method, "=======req.method");
 	if (
 		exClude.find((item) => item.url === req.path && item.methods.includes(req.method))
 	) {

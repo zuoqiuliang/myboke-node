@@ -147,3 +147,27 @@ exports.formatToc = (markdownInfo) => {
 	}
 	return transfer(flatTocArr);
 };
+
+/**
+ * 根据环境变量获取对应的域名
+ * @returns {string} 当前环境的域名
+ */
+exports.getDomainByEnv = function getDomainByEnv() {
+	// 获取环境变量 NODE_ENV（默认开发环境）
+	console.log(process.env.NODE_ENV, "NODE_ENV");
+	const env = process.env.NODE_ENV || "development";
+	console.log("当前环境:", env);
+
+	// 根据环境选择域名
+	let domain = "";
+	if (env === "production") {
+		// 生产环境域名（从 .env 文件读取）
+		domain = process.env.PROD_DOMAIN || "http://123.56.177.104";
+	} else {
+		// 开发环境域名（从 .env 文件读取）
+		domain = process.env.DEV_DOMAIN || "http://localhost:3000";
+	}
+
+	console.log("使用的域名:", domain);
+	return domain;
+};

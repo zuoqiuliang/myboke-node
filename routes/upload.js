@@ -4,9 +4,10 @@ const {
 	formatResponse,
 	analysisToken,
 	formatFormDaoData,
-	uploading
+	uploading,
+	getDomainByEnv
 } = require("../utils/tool");
-
+console.log(getDomainByEnv(), "getDomainByEnv");
 const { UploadError } = require("../utils/errors");
 const multer = require("multer");
 // 上传图片
@@ -21,7 +22,7 @@ router.post("/", async function (req, res, next) {
 			// 一切都好
 			const path = "/static/uploads/" + req.file.filename;
 
-			res.send(formatResponse(200, "success", `${process.env.BASE_URL}${path}`));
+			res.send(formatResponse(200, "success", `${getDomainByEnv()}${path}`));
 		}
 	});
 });

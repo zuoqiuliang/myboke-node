@@ -13,6 +13,9 @@ exports.loginService = async (loginObj) => {
 	const loginPwdMd5 = md5(loginPwd);
 	let result = await loginDao(loginId, loginPwdMd5);
 	console.log(result, "result 查到的结果");
+	if (!result || !result.dataValues) {
+		throw new ValidationError("账号或密码错误");
+	}
 	if (result && result.dataValues) {
 		// 做 token 的处理
 		result = result.dataValues;
@@ -45,6 +48,7 @@ exports.loginService = async (loginObj) => {
 			remember: loginPeriod
 		};
 	}
+
 	return {
 		data: result
 	};

@@ -171,12 +171,15 @@ exports.getOneBlogService = async (id, userInfo, auth) => {
 	if (data.dataValues.htmlContent) {
 		data.dataValues.htmlContent = processHtmlImages(data.dataValues.htmlContent);
 	}
-	// 判断当前用户是否收藏过这篇文章
-	const isCollected = await checkUserFavoriteDao(userInfo.id, id);
-	data.dataValues.isCollected = isCollected;
-	// 判断当前用户是否点赞过这篇文章
-	const isLiked = await checkUserLikeDao(userInfo.id, id);
-	data.dataValues.isLiked = isLiked;
+	// 因为当用户登录后才会有userInfo，但是未登录也可以查看文章详情
+	if (userInfo) {
+		// 判断当前用户是否收藏过这篇文章
+		const isCollected = await checkUserFavoriteDao(userInfo.id, id);
+		data.dataValues.isCollected = isCollected;
+		// 判断当前用户是否点赞过这篇文章
+		const isLiked = await checkUserLikeDao(userInfo.id, id);
+		data.dataValues.isLiked = isLiked;
+	}
 	// 获取文章评论列表
 	const comments = await getMessagesByBlogIdService(id, 1, 50); // 一次获取50条评论
 	data.dataValues.comments = comments.rows;

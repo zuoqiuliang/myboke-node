@@ -70,9 +70,28 @@ app.use(express.static(path.join(__dirname, "public")));
 // cookie自定义校验
 app.use(async (req, res, next) => {
 	console.log(req.path, "=======req.path", req.method, "=======req.method");
-	if (
-		exClude.find((item) => item.url === req.path && item.methods.includes(req.method))
-	) {
+	const isExcluded = exClude.some((item) => {
+		let isPathMatch = false;
+		// 检查item是否有效
+		if (!item || typeof item !== "object") {
+			return false;
+		}
+		console.log(item.url, item.url instanceof RegExp, "item.url instanceof RegExp");
+		// 检查item.url是正则表达式还是字符串
+		if (item.url instanceof RegExp) {
+			// 如果是正则表达式，使用test()方法
+			isPathMatch = item.url.test(req.path);
+		} else if (typeof item.url === "string") {
+			// 如果是字符串，使用includes()方法或其他字符串方法
+			isPathMatch = req.path.includes(item.url);
+			// 或使用更精确的匹配：path === item.url
+		}
+		// 检查方法是否匹配
+		// 检查方法匹配
+		const isMethodMatch = item.methods && item.methods.includes(req.method);
+		return isPathMatch && isMethodMatch;
+	});
+	if (isExcluded) {
 		next();
 	} else {
 		const token = req.signedCookies.token;

@@ -21,11 +21,22 @@ module.exports = sequelize.define(
 		password: {
 			type: DataTypes.STRING,
 			allowNull: false
+		},
+		// 创建时间字段
+		createdAt: {
+			type: DataTypes.DATE,
+			defaultValue: DataTypes.NOW,
+			allowNull: false
+		},
+		// 更新时间字段
+		updatedAt: {
+			type: DataTypes.DATE,
+			defaultValue: DataTypes.NOW,
+			allowNull: false
 		}
 	},
 	{
 		freezeTableName: true,
-		createdAt: false,
-		updatedAt: false
+		timestamps: true
 	}
 );

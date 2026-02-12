@@ -1,0 +1,16 @@
+{
+  "development": {
+    "username": "root",
+    "password": "zql123456",
+    "database": "myboke",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": "ZUO+18232249132",
+    "database": "myboke",
+    "host": "localhost",
+    "dialect": "mysql"
+  }
+}

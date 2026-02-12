@@ -172,6 +172,7 @@ exports.getOneBlogService = async (id, userInfo, auth) => {
 		data.dataValues.htmlContent = processHtmlImages(data.dataValues.htmlContent);
 	}
 	// 因为当用户登录后才会有userInfo，但是未登录也可以查看文章详情
+	console.log(userInfo, "userInfo");
 	if (userInfo) {
 		// 判断当前用户是否收藏过这篇文章
 		const isCollected = await checkUserFavoriteDao(userInfo.id, id);

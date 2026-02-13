@@ -1,5 +1,6 @@
 const md5 = require("md5");
 const userInfoModel = require("./model/userInfoModel");
+const userCModel = require("./model/userCModel");
 
 // 创建用户信息
 exports.addUserInfoDao = async (userInfo) => {
@@ -16,11 +17,26 @@ exports.addUserInfoDao = async (userInfo) => {
 
 // 通过用户表id查找用户信息
 exports.getUserInfoDao = async (id) => {
-	return await userInfoModel.findOne({
+	// 先查询用户基本信息
+	const userInfo = await userInfoModel.findOne({
 		where: {
 			userId: id
 		}
 	});
+
+	// 如果找到了用户信息，再查询对应的userC记录获取创建时间
+	if (userInfo) {
+		const userC = await userCModel.findByPk(id, {
+			attributes: ["createdAt"]
+		});
+
+		if (userC) {
+			// 将创建时间添加到用户信息中
+			userInfo.dataValues.createdAt = userC.createdAt;
+		}
+	}
+
+	return userInfo;
 };
 
 // 更新用户信息

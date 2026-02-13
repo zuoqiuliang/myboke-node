@@ -103,3 +103,31 @@ exports.getUserLikedBlogsDao = async (userId, page = 1, limit = 10) => {
 		order: [["createdAt", "DESC"]]
 	});
 };
+
+// 获取用户所有文章的被点赞总数
+exports.getUserArticlesLikeCountDao = async (userId) => {
+	// 首先获取用户的所有文章
+	const userBlogs = await blogModel.findAll({
+		where: {
+			userId
+		},
+		attributes: ["id"]
+	});
+
+	// 提取文章ID列表
+	const blogIds = userBlogs.map(blog => blog.id);
+
+	// 如果用户没有文章，返回0
+	if (blogIds.length === 0) {
+		return 0;
+	}
+
+	// 统计这些文章的总点赞数
+	const totalLikeCount = await userLikeModel.count({
+		where: {
+			blogId: blogIds
+		}
+	});
+
+	return totalLikeCount;
+};

@@ -8,6 +8,9 @@ const {
 	getUserInfoDao,
 	updateUserInfoDao
 } = require("../dao/userInfoDao");
+const { getBlogsByUserIdDao } = require("../dao/blogDao");
+const userFollowDao = require("../dao/userFollowDao");
+const { getUserArticlesLikeCountDao } = require("../dao/userLikeDao");
 const { v4: uuidv4 } = require("uuid");
 exports.registerUserService = async (user) => {
 	try {
@@ -123,13 +126,68 @@ exports.loginUserService = async (user) => {
 	};
 };
 
-// 查询用户信息
+// 查询用户信息（默认查询当前登录用户）
 exports.getUserInfoService = async (userId) => {
 	const userInfo = await getUserInfoDao(userId);
 	if (!userInfo) {
 		throw new ValidationError("用户信息不存在");
 	}
-	return userInfo;
+
+	// 获取用户的文章数
+	const blogsResult = await getBlogsByUserIdDao(userId, 1, 1);
+	const articleCount = blogsResult.count;
+
+	// 获取用户的关注人数
+	const followingCount = await userFollowDao.getFollowingCount(userId);
+
+	// 获取用户的粉丝数
+	const followerCount = await userFollowDao.getFollowersCount(userId);
+
+	// 获取用户所有文章的被点赞总数
+	const totalArticlesLikeCount = await getUserArticlesLikeCountDao(userId);
+
+	// 将统计信息添加到用户信息中
+	const userInfoWithStats = {
+		...userInfo.dataValues,
+		articleCount,
+		followingCount,
+		followerCount,
+		totalArticlesLikeCount
+	};
+
+	return userInfoWithStats;
+};
+
+// 通过用户ID查询用户信息
+exports.getUserInfoByIdService = async (userId) => {
+	const userInfo = await getUserInfoDao(userId);
+	if (!userInfo) {
+		throw new ValidationError("用户信息不存在");
+	}
+
+	// 获取用户的文章数
+	const blogsResult = await getBlogsByUserIdDao(userId, 1, 1);
+	const articleCount = blogsResult.count;
+
+	// 获取用户的关注人数
+	const followingCount = await userFollowDao.getFollowingCount(userId);
+
+	// 获取用户的粉丝数
+	const followerCount = await userFollowDao.getFollowersCount(userId);
+
+	// 获取用户所有文章的被点赞总数
+	const totalArticlesLikeCount = await getUserArticlesLikeCountDao(userId);
+
+	// 将统计信息添加到用户信息中
+	const userInfoWithStats = {
+		...userInfo.dataValues,
+		articleCount,
+		followingCount,
+		followerCount,
+		totalArticlesLikeCount
+	};
+
+	return userInfoWithStats;
 };
 
 // 更新用户信息

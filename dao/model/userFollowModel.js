@@ -54,7 +54,8 @@ const UserFollow = sequelize.define(
 				fields: ["followingId"],
 				name: "idx_following"
 			}
-		]
+		],
+		foreignKeys: false
 	}
 );
 

@@ -19,6 +19,7 @@ const { deleteMessageByBlogIdDao } = require("../dao/messageDao");
 const { checkUserFavoriteDao } = require("../dao/userFavoriteDao");
 const { getMessagesByBlogIdService } = require("./messageService");
 const { checkUserLikeDao } = require("../dao/userLikeDao");
+const userFollowDao = require("../dao/userFollowDao");
 // 根据自定义属性categoryIdIsExist扩展校验规则
 validate.validators.categoryIdIsExist = async function (value) {
 	console.log(value, "value");
@@ -180,6 +181,15 @@ exports.getOneBlogService = async (id, userInfo, auth) => {
 		// 判断当前用户是否点赞过这篇文章
 		const isLiked = await checkUserLikeDao(userInfo.id, id);
 		data.dataValues.isLiked = isLiked;
+		// 判断当前用户是否关注过文章作者
+		const blogUserId = data.dataValues.userId;
+		if (userInfo.id !== blogUserId) {
+			const isFollowingAuthor = await userFollowDao.isFollowing(userInfo.id, blogUserId);
+			data.dataValues.isFollowingAuthor = isFollowingAuthor;
+		} else {
+			// 自己的文章，不需要显示关注状态
+			data.dataValues.isFollowingAuthor = false;
+		}
 	}
 	// 获取文章评论列表
 	const comments = await getMessagesByBlogIdService(id, 1, 50); // 一次获取50条评论

@@ -14,6 +14,7 @@ const tagModel = require("./model/tagModel");
 const blogTagModel = require("./model/blogTagModel");
 const userFavoriteModel = require("./model/userFavoriteModel");
 const userLikeModel = require("./model/userLikeModel");
+const userFollowModel = require("./model/userFollowModel");
 const md5 = require("md5");
 (async function () {
 	/**
@@ -40,7 +41,7 @@ const md5 = require("md5");
 		targetKey: "id",
 		as: "blog"
 	});
-	
+
 	/**
 	 * 定义用户表和评论表关联
 	 */
@@ -147,6 +148,22 @@ const md5 = require("md5");
 		foreignKey: "blogId", // 文章在中间表中的外键
 		otherKey: "userId", // 用户在中间表中的外键
 		as: "likedUsers" // 别名，用于查询时使用
+	});
+
+	/**
+	 * 定义用户和用户的多对多关系（关注）
+	 */
+	userCModel.belongsToMany(userCModel, {
+		through: userFollowModel, // 通过中间表关联
+		foreignKey: "followerId", // 关注者在中间表中的外键
+		otherKey: "followingId", // 被关注者在中间表中的外键
+		as: "following" // 别名，用于查询关注列表
+	});
+	userCModel.belongsToMany(userCModel, {
+		through: userFollowModel, // 通过中间表关联
+		foreignKey: "followingId", // 被关注者在中间表中的外键
+		otherKey: "followerId", // 关注者在中间表中的外键
+		as: "followers" // 别名，用于查询粉丝列表
 	});
 	/**
    * 一次同步所有模型

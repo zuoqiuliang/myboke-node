@@ -34,6 +34,7 @@ const proxyRouter = require("./routes/proxy");
 const tagRouter = require("./routes/tag");
 const userFavoriteRouter = require("./routes/userFavorite");
 const userLikeRouter = require("./routes/userLike");
+const userFollowRouter = require("./routes/userFollow");
 app.use(
 	session({
 		secret: process.env.SESSION_SECRET,
@@ -139,6 +140,7 @@ app.use("/api/tag", tagRouter);
 app.use("/api/proxy", proxyRouter);
 app.use("/api/userFavorite", userFavoriteRouter);
 app.use("/api/userLike", userLikeRouter);
+app.use("/api/userFollow", userFollowRouter);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
 	next(createError(404));

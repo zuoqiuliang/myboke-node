@@ -150,6 +150,10 @@ app.use(function (req, res, next) {
 app.use(function (err, req, res, next) {
 	// 任何中间件 throw 抛出的 error 都会直接到此中间件
 	console.log(err.name, "app.js 错误中间件");
+	// 输出详细的错误信息，以便排查问题
+	if (err.name === "SequelizeDatabaseError") {
+		console.error("SequelizeDatabaseError 详细信息:", err);
+	}
 	if (err.name === "UnauthorizedError") {
 		res.send(new ForbiddenError("未登录 或登录已过期").toResponseJSON());
 	} else if (err instanceof ServiceError) {

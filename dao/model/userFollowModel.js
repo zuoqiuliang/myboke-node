@@ -55,7 +55,8 @@ const UserFollow = sequelize.define(
 				name: "idx_following"
 			}
 		],
-		foreignKeys: false
+		// 添加自定义配置，标记该模型不需要自动同步
+		skipSync: true
 	}
 );
 

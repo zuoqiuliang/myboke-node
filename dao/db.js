@@ -151,31 +151,66 @@ const md5 = require("md5");
 	});
 
 	/**
-	 * 定义用户和用户的多对多关系（关注）
-	 */
-	userCModel.belongsToMany(userCModel, {
-		through: userFollowModel, // 通过中间表关联
-		foreignKey: "followerId", // 关注者在中间表中的外键
-		otherKey: "followingId", // 被关注者在中间表中的外键
-		as: "following" // 别名，用于查询关注列表
-	});
-	userCModel.belongsToMany(userCModel, {
-		through: userFollowModel, // 通过中间表关联
-		foreignKey: "followingId", // 被关注者在中间表中的外键
-		otherKey: "followerId", // 关注者在中间表中的外键
-		as: "followers" // 别名，用于查询粉丝列表
-	});
-	/**
    * 一次同步所有模型
     你可以使用 sequelize.sync() 自动同步所有模型. 示例：
     await sequelize.sync({ force: true });
     console.log("所有模型均已成功同步.");
    */
-	await sequelize.sync({
-		alter: false,
-		force: false,
-		hooks: false
-	});
+	// 自定义同步函数，支持排除标记了 skipSync 的模型
+	async function syncModels(options = { alter: false }) {
+		// 获取所有注册的模型
+		const models = Object.values(sequelize.models);
+
+		// 同步每个模型，跳过标记了 skipSync 的模型
+		for (const model of models) {
+			// 检查模型是否标记了跳过同步
+			if (!model.options.skipSync) {
+				await model.sync(options);
+			}
+		}
+	}
+
+	// 先同步 userC 表，确保它存在
+	await userCModel.sync({ alter: false });
+
+	// 使用自定义同步函数，排除标记了 skipSync 的模型
+	await syncModels({ alter: false });
+
+	// 手动创建 user_follows 表，不添加外键约束
+	if (userFollowModel.options.skipSync) {
+		try {
+			const mysql = require("mysql2/promise");
+			const connection = await mysql.createConnection({
+				host: process.env.DB_HOST,
+				user: process.env.DB_USER,
+				password:
+					process.env.NODE_ENV === "production"
+						? process.env.DB_PASSWORD_PROD
+						: process.env.DB_PASSWORD_DEV,
+				database: process.env.DB_NAME
+			});
+
+			await connection.execute(`
+				CREATE TABLE IF NOT EXISTS \`user_follows\` (
+					\`id\` VARCHAR(36) NOT NULL,
+					\`followerId\` VARCHAR(36) NOT NULL,
+					\`followingId\` VARCHAR(36) NOT NULL,
+					\`createdAt\` DATETIME NOT NULL,
+					\`updatedAt\` DATETIME NOT NULL,
+					PRIMARY KEY (\`id\`),
+					UNIQUE KEY \`unique_follow\` (\`followerId\`, \`followingId\`),
+					INDEX \`idx_follower\` (\`followerId\`),
+					INDEX \`idx_following\` (\`followingId\`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+			`);
+
+			await connection.end();
+			console.log("user_follows 表创建成功");
+		} catch (error) {
+			console.error("创建 user_follows 表失败:", error);
+		}
+	}
+
 	console.log("所有模型均已成功同步");
 	const adminCount = await adminModel.count();
 	console.log("admin表条数：", adminCount);

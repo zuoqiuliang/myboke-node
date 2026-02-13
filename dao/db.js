@@ -171,7 +171,11 @@ const md5 = require("md5");
     await sequelize.sync({ force: true });
     console.log("所有模型均已成功同步.");
    */
-	await sequelize.sync({ alter: true });
+	await sequelize.sync({
+		alter: false,
+		force: false,
+		hooks: false
+	});
 	console.log("所有模型均已成功同步");
 	const adminCount = await adminModel.count();
 	console.log("admin表条数：", adminCount);

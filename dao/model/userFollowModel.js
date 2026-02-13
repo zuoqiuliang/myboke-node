@@ -16,20 +16,12 @@ const UserFollow = sequelize.define(
 		// 关注者ID（主动关注的用户）
 		followerId: {
 			type: DataTypes.STRING(36),
-			allowNull: false,
-			references: {
-				model: "userC",
-				key: "id"
-			}
+			allowNull: false
 		},
 		// 被关注者ID（被关注的用户）
 		followingId: {
 			type: DataTypes.STRING(36),
-			allowNull: false,
-			references: {
-				model: "userC",
-				key: "id"
-			}
+			allowNull: false
 		},
 		// 创建时间
 		createdAt: {

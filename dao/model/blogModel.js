@@ -21,7 +21,7 @@ module.exports = sequelize.define(
 		// 描述
 		description: {
 			type: DataTypes.STRING,
-			allowNull: false
+			allowNull: true
 		},
 		toc: {
 			type: DataTypes.TEXT,
@@ -37,7 +37,7 @@ module.exports = sequelize.define(
 		},
 		thumb: {
 			type: DataTypes.STRING,
-			allowNull: false
+			allowNull: true
 		},
 		// 文章浏览数
 		scanNumber: {

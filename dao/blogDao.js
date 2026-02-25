@@ -98,7 +98,8 @@ exports.getBlogByPageDao = async (searchInfo) => {
 			],
 			offset: (page - 1) * limit,
 			limit: limit,
-			order: [["createdAt", "DESC"]]
+			order: [["createdAt", "DESC"]],
+			distinct: true
 		});
 		// 为每个文章计算点赞数和收藏数
 		for (const blog of data.rows) {
@@ -134,7 +135,8 @@ exports.getBlogByPageDao = async (searchInfo) => {
 			],
 			offset: (page - 1) * limit,
 			limit: limit,
-			order: [["createdAt", "DESC"]]
+			order: [["createdAt", "DESC"]],
+			distinct: true
 		});
 		// 为每个文章计算点赞数和收藏数
 		for (const blog of data.rows) {

@@ -37,6 +37,10 @@ exports.addBlogService = async (newBlogInfo) => {
 	// 初始化一些新增时的数据
 	newBlogInfo.scanNumber = 0;
 	newBlogInfo.commentNumber = 0;
+	// 为可选字段设置默认值，防止数据库验证失败
+	newBlogInfo.description = newBlogInfo.description || "";
+	newBlogInfo.thumb = newBlogInfo.thumb || "";
+	newBlogInfo.htmlContent = newBlogInfo.htmlContent || "";
 	// 新增的时候需要验证，比如：用户通过 postman 发送的请求而不是通过真实web 端项目发送的，使用validate.js来做验证
 	/**
 	 * 数据验证规则
@@ -50,9 +54,7 @@ exports.addBlogService = async (newBlogInfo) => {
 		},
 		// 描述
 		description: {
-			presence: {
-				allowEmpty: true
-			},
+			presence: false,
 			type: "string"
 		},
 		toc: {
@@ -74,9 +76,7 @@ exports.addBlogService = async (newBlogInfo) => {
 			type: "string"
 		},
 		thumb: {
-			presence: {
-				allowEmpty: true
-			},
+			presence: false,
 			type: "string"
 		},
 		// 文章浏览数

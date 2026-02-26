@@ -21,8 +21,14 @@ router.post("/", async function (req, res, next) {
 		} else {
 			// 一切都好
 			const path = "/static/uploads/" + req.file.filename;
-
-			res.send(formatResponse(200, "success", `${getDomainByEnv()}${path}`));
+			const localPath = `${getDomainByEnv()}${path}`;
+			res.send(
+				formatResponse(
+					200,
+					"success",
+					process.env.NODE_ENV === "production" ? path : localPath
+				)
+			);
 		}
 	});
 });

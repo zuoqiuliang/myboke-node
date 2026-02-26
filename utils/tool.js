@@ -162,7 +162,7 @@ exports.getDomainByEnv = function getDomainByEnv() {
 	let domain = "";
 	if (env === "production") {
 		// 生产环境域名（从 .env 文件读取）
-		domain = process.env.PROD_DOMAIN || "http://123.56.177.104";
+		domain = process.env.PROD_DOMAIN || "https://123.56.177.104";
 	} else {
 		// 开发环境域名（从 .env 文件读取）
 		domain = process.env.DEV_DOMAIN || "http://localhost:3000";

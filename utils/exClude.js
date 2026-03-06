@@ -12,5 +12,8 @@ exports.exClude = [
 	{ url: "/api/tag", methods: ["GET"] }, // 获取标签列表
 	{ url: "/api/tag/tree", methods: ["GET"] }, // 获取标签树
 	{ url: "/api/proxy/image", methods: ["GET"] }, // 图片代理路由
-	{ url: "/api/blog/recommended", methods: ["GET"] } // 获取用户信息
+	{ url: "/api/blog/recommended", methods: ["GET"] }, // 获取用户信息
+	{ url: /\/api\/userInfo\/.+/, methods: ["GET"] }, // 获取用户信息,支持正则
+	{ url: "/api/userInfo", methods: ["GET"] }, // 获取用户信息
+	{ url: "/api/userFavorite", methods: ["GET"] } // 获取用户收藏列表
 ];

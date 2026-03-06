@@ -28,7 +28,6 @@ router.post("/update", async function (req, res, next) {
 router.get("/:id", async function (req, res, next) {
 	try {
 		const { id } = req.params;
-		console.log(id, "=======id");
 		const userInfo = await getUserInfoByIdService(id);
 		res.send(formatResponse(200, "success", userInfo));
 	} catch (error) {

@@ -248,7 +248,8 @@ exports.getBlogsByUserIdDao = async (userId, page = 1, limit = 10) => {
 		],
 		offset: offset,
 		limit: limit,
-		order: [["createdAt", "DESC"]]
+		order: [["createdAt", "DESC"]],
+		distinct: true
 	});
 	// 为每个文章计算点赞数和收藏数
 	for (const blog of data.rows) {
@@ -304,4 +305,20 @@ exports.getRecommendedBlogsDao = async (limit = 10) => {
 	}
 
 	return data;
+};
+
+// 获取用户所有文章的浏览数总和
+exports.getUserArticlesScanCountDao = async (userId) => {
+	// 使用聚合函数计算用户所有文章的浏览数总和
+	const result = await blogModel.findOne({
+		where: {
+			userId
+		},
+		attributes: [[Sequelize.fn("SUM", Sequelize.col("scanNumber")), "totalScanCount"]]
+	});
+
+	// 如果用户没有文章，返回0
+	return result && result.dataValues.totalScanCount
+		? result.dataValues.totalScanCount
+		: 0;
 };

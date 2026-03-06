@@ -8,7 +8,7 @@ const {
 	getUserInfoDao,
 	updateUserInfoDao
 } = require("../dao/userInfoDao");
-const { getBlogsByUserIdDao } = require("../dao/blogDao");
+const { getBlogsByUserIdDao, getUserArticlesScanCountDao } = require("../dao/blogDao");
 const userFollowDao = require("../dao/userFollowDao");
 const { getUserArticlesLikeCountDao } = require("../dao/userLikeDao");
 const { v4: uuidv4 } = require("uuid");
@@ -178,13 +178,17 @@ exports.getUserInfoByIdService = async (userId) => {
 	// 获取用户所有文章的被点赞总数
 	const totalArticlesLikeCount = await getUserArticlesLikeCountDao(userId);
 
+	// 获取用户所有文章的浏览数总和
+	const totalArticlesScanCount = await getUserArticlesScanCountDao(userId);
+
 	// 将统计信息添加到用户信息中
 	const userInfoWithStats = {
 		...userInfo.dataValues,
 		articleCount,
 		followingCount,
 		followerCount,
-		totalArticlesLikeCount
+		totalArticlesLikeCount,
+		totalArticlesScanCount
 	};
 
 	return userInfoWithStats;
